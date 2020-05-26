@@ -12,12 +12,12 @@ class HomePage extends StatelessWidget {
     wp.WordPress wordPress;
 
     wordPress = wp.WordPress(
-      baseUrl: 'https://curtaincalladventures.com',
+      baseUrl: kSiteUrl,
     );
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Wordpress demo'),
+        title: Text(kSiteName),
       ),
       body: Container(
         child: FutureBuilder(
