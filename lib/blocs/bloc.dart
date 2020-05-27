@@ -10,10 +10,15 @@ class Bloc extends Transformers {
   final StreamController<List<wp.Category>> _categoriesController =
       BehaviorSubject<List<wp.Category>>();
 
-  Stream<List<wp.Post>> get getFeaturedPosts =>
-      _featuredPostsController.stream.transform(fetchFeaturedPosts);
-  Stream<List<wp.Category>> get getCategories =>
-      _categoriesController.stream.transform(fetchCategories);
+  Stream<List<wp.Post>> get getFeaturedPosts {
+    setFeaturedPosts([]);
+    return _featuredPostsController.stream.transform(fetchFeaturedPosts);
+  }
+
+  Stream<List<wp.Category>> get getCategories {
+    setCategories([]);
+    return _categoriesController.stream.transform(fetchCategories);
+  }
 
   Function(List<wp.Post>) get setFeaturedPosts =>
       _featuredPostsController.sink.add;
