@@ -14,34 +14,35 @@ class PostFeaturedTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.all(10.0),
+      padding: EdgeInsets.symmetric(vertical: 5),
       child: GestureDetector(
-        onTap: () => Navigator.push(
-            context,
-            MaterialPageRoute(
-                builder: (context) => PostScreen(postId: post.id))),
+        onTap: () => Navigator.push(context,
+            MaterialPageRoute(builder: (context) => PostScreen(post: post))),
         child: Card(
           elevation: 5,
           child: Column(
             children: <Widget>[
               post.featuredMedia != null
-                  ? Container(
-                      height: 200,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.only(
-                          topLeft: Radius.circular(5),
-                          topRight: Radius.circular(5),
-                        ),
-                        image: DecorationImage(
-                          fit: BoxFit.cover,
-                          image: CachedNetworkImageProvider(
-                              post.featuredMedia.sourceUrl),
+                  ? Hero(
+                      tag: post.id.toString() + 'featuredImage',
+                      child: Container(
+                        height: 200,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.only(
+                            topLeft: Radius.circular(5),
+                            topRight: Radius.circular(5),
+                          ),
+                          image: DecorationImage(
+                            fit: BoxFit.cover,
+                            image: CachedNetworkImageProvider(
+                                post.featuredMedia.sourceUrl),
+                          ),
                         ),
                       ),
                     )
-                  : Text('no image'),
+                  : Container(),
               Container(
-                padding: EdgeInsets.all(10.0),
+                padding: EdgeInsets.all(10),
                 child: Column(
                   children: <Widget>[
                     Text(

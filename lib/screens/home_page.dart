@@ -1,48 +1,42 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_wordpress/flutter_wordpress.dart' as wp;
-import 'package:flutter_wordpress/schemas/post.dart';
-import 'package:flutterwp/config/constants.dart';
+import 'package:flutterwp/widgets/main_appbar.dart';
+import 'package:flutterwp/widgets/main_drawer.dart';
 import 'package:flutterwp/widgets/posts_featured_tile.dart';
+import 'package:flutter_wordpress/flutter_wordpress.dart' as wp;
+import 'package:flutterwp/blocs/bloc.dart';
 
-class HomePage extends StatelessWidget {
-  const HomePage({Key key}) : super(key: key);
+class HomePage extends StatefulWidget {
+  @override
+  _HomePageState createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  @override
+  void initState() {
+    super.initState();
+    final List<wp.Post> _featuredPosts = [];
+    bloc.setFeaturedPosts(_featuredPosts);
+  }
 
   @override
   Widget build(BuildContext context) {
-    wp.WordPress wordPress;
-
-    wordPress = wp.WordPress(
-      baseUrl: kSiteUrl,
-    );
-
+    print('Redrawing home');
     return Scaffold(
-      appBar: AppBar(
-        title: Text(kSiteName),
-      ),
+      appBar: MainAppbar(),
+      drawer: MainDrawer(),
       body: Container(
-        child: FutureBuilder(
-          future: wordPress.fetchPosts(
-            postParams: wp.ParamsPostList(
-              context: wp.WordPressContext.view,
-              pageNum: 1,
-              perPage: kHomePageArticles,
-              order: wp.Order.desc,
-              orderBy: wp.PostOrderBy.date,
-            ),
-            postType: 'posts',
-            fetchFeaturedMedia: true,
-          ),
-          builder: (context, AsyncSnapshot<List<Post>> snapshot) {
+        padding: EdgeInsets.all(10),
+        child: StreamBuilder(
+          stream: bloc.getFeaturedPosts,
+          builder: (context, AsyncSnapshot<List<wp.Post>> snapshot) {
             if (!snapshot.hasData) {
               return LinearProgressIndicator();
             }
-            return ListView.builder(
-              itemCount: snapshot.data.length,
-              itemBuilder: (context, index) {
-                final Post _post = snapshot.data[index];
-                return PostFeaturedTile(post: _post);
-              },
-            );
+            List<PostFeaturedTile> _featured = [];
+            snapshot.data.forEach((post) {
+              _featured.add(PostFeaturedTile(post: post));
+            });
+            return ListView(children: _featured);
           },
         ),
       ),
