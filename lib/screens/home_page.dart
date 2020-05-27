@@ -9,33 +9,46 @@ class HomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     print('Redrawing home');
-    return Scaffold(
-      appBar: MainAppbar(),
-      drawer: StreamBuilder(
-        stream: bloc.getCategories,
-        builder: (context, AsyncSnapshot<List<wp.Category>> snapshot) {
-          if (!snapshot.hasData) {
-            return LinearProgressIndicator();
-          }
-          return MainDrawer(snapshot.data);
-        },
-      ),
-      body: Container(
-        padding: EdgeInsets.all(10),
-        child: StreamBuilder(
-          stream: bloc.getFeaturedPosts,
-          builder: (context, AsyncSnapshot<List<wp.Post>> snapshot) {
-            if (!snapshot.hasData) {
-              return LinearProgressIndicator();
-            }
-            List<PostFeaturedTile> _featured = [];
-            snapshot.data.forEach((post) {
-              _featured.add(PostFeaturedTile(post: post));
-            });
-            return ListView(children: _featured);
-          },
+    if (bloc.getStoredFeaturedPosts == null) {
+      return Scaffold(
+        appBar: MainAppbar(),
+        drawer: MainDrawer(),
+        body: Container(
+          padding: EdgeInsets.all(10),
+          child: StreamBuilder(
+            stream: bloc.getFeaturedPosts,
+            builder: (context, AsyncSnapshot<List<wp.Post>> snapshot) {
+              if (!snapshot.hasData) {
+                return LinearProgressIndicator();
+              }
+              List<PostFeaturedTile> _featured = [];
+              snapshot.data.forEach((post) {
+                _featured.add(PostFeaturedTile(post: post));
+              });
+              return ListView(
+                physics: BouncingScrollPhysics(),
+                children: _featured,
+              );
+            },
+          ),
         ),
-      ),
-    );
+      );
+    } else {
+      final List<Widget> _featured = [];
+      bloc.getStoredFeaturedPosts.forEach((post) {
+        _featured.add(PostFeaturedTile(post: post));
+      });
+      return Scaffold(
+        appBar: MainAppbar(),
+        drawer: MainDrawer(),
+        body: Container(
+          padding: EdgeInsets.all(10),
+          child: ListView(
+            physics: BouncingScrollPhysics(),
+            children: _featured,
+          ),
+        ),
+      );
+    }
   }
 }

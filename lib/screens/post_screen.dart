@@ -2,7 +2,6 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_html/flutter_html.dart';
 import 'package:flutter_wordpress/flutter_wordpress.dart' as wp;
 import 'package:flutter/material.dart';
-import 'package:flutterwp/blocs/bloc.dart';
 import 'package:flutterwp/config/helper_functions.dart';
 import 'package:flutterwp/widgets/main_appbar.dart';
 import 'package:flutterwp/widgets/main_drawer.dart';
@@ -15,15 +14,7 @@ class PostScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      drawer: StreamBuilder(
-        stream: bloc.getCategories,
-        builder: (context, AsyncSnapshot<List<wp.Category>> snapshot) {
-          if (!snapshot.hasData) {
-            return LinearProgressIndicator();
-          }
-          return MainDrawer(snapshot.data);
-        },
-      ),
+      drawer: MainDrawer(),
       appBar: MainAppbar(),
       body: SingleChildScrollView(
         physics: BouncingScrollPhysics(),
