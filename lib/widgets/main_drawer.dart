@@ -7,7 +7,8 @@ import 'package:html_character_entities/html_character_entities.dart';
 class MainDrawer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    if (bloc.getStoredCategories == null) {
+    if (bloc.getStoredCategories == null ||
+        bloc.getStoredCategories?.length == 0) {
       return Drawer(
         child: StreamBuilder(
           stream: bloc.getCategories,

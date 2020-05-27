@@ -9,14 +9,15 @@ class HomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     print('Redrawing home');
-    if (bloc.getStoredFeaturedPosts == null) {
+    if (bloc.getStoredNewestPosts == null ||
+        bloc.getStoredNewestPosts?.length == 0) {
       return Scaffold(
         appBar: MainAppbar(),
         drawer: MainDrawer(),
         body: Container(
           padding: EdgeInsets.all(10),
           child: StreamBuilder(
-            stream: bloc.getFeaturedPosts,
+            stream: bloc.getNewestPosts,
             builder: (context, AsyncSnapshot<List<wp.Post>> snapshot) {
               if (!snapshot.hasData) {
                 return LinearProgressIndicator();
@@ -25,9 +26,20 @@ class HomePage extends StatelessWidget {
               snapshot.data.forEach((post) {
                 _featured.add(PostFeaturedTile(post: post));
               });
-              return ListView(
-                physics: BouncingScrollPhysics(),
-                children: _featured,
+              return NotificationListener<ScrollNotification>(
+                onNotification: (ScrollNotification scrollInfo) {
+                  if (scrollInfo.metrics.pixels ==
+                          scrollInfo.metrics.maxScrollExtent &&
+                      !bloc.getIsLoadingPosts) {
+                    print('scroll end reached...');
+                    bloc.getNewestPosts;
+                  }
+                  return false;
+                },
+                child: ListView(
+                  physics: BouncingScrollPhysics(),
+                  children: _featured,
+                ),
               );
             },
           ),
@@ -35,7 +47,7 @@ class HomePage extends StatelessWidget {
       );
     } else {
       final List<Widget> _featured = [];
-      bloc.getStoredFeaturedPosts.forEach((post) {
+      bloc.getStoredNewestPosts.forEach((post) {
         _featured.add(PostFeaturedTile(post: post));
       });
       return Scaffold(

@@ -4,18 +4,20 @@ import 'package:flutterwp/config/constants.dart';
 import 'package:rxdart/rxdart.dart';
 
 class Bloc {
-  final StreamController<List<wp.Post>> _featuredPostsController =
+  final StreamController<List<wp.Post>> _newestPostsController =
       BehaviorSubject<List<wp.Post>>();
   final StreamController<List<wp.Category>> _categoriesController =
       BehaviorSubject<List<wp.Category>>();
 
   // Variables
-  static List<wp.Category> categories;
-  static List<wp.Post> featuredPosts;
+  static List<wp.Category> categories = [];
+  static List<wp.Post> newestPosts = [];
+  static bool isLoadingPosts = false;
+  static bool endReached = false;
 
-  Stream<List<wp.Post>> get getFeaturedPosts {
-    _featuredPostsController.sink.add([]);
-    return _featuredPostsController.stream.transform(_fetchFeaturedPosts);
+  Stream<List<wp.Post>> get getNewestPosts {
+    _newestPostsController.sink.add(newestPosts);
+    return _newestPostsController.stream.transform(_fetchNewestPosts);
   }
 
   Stream<List<wp.Category>> get getCategories {
@@ -23,34 +25,57 @@ class Bloc {
     return _categoriesController.stream.transform(_fetchCategories);
   }
 
-  List<wp.Post> get getStoredFeaturedPosts => featuredPosts;
+  List<wp.Post> get getStoredNewestPosts => newestPosts;
   List<wp.Category> get getStoredCategories => categories;
+  bool get getIsLoadingPosts => isLoadingPosts;
 
   dispose() {
-    _featuredPostsController.close();
+    _newestPostsController.close();
     _categoriesController.close();
   }
 
   // Stream Transformers
 
-  final _fetchFeaturedPosts =
+  final _fetchNewestPosts =
       StreamTransformer<List<wp.Post>, List<wp.Post>>.fromHandlers(
           handleData: (featPosts, sink) async {
-    wp.WordPress wordPress = wp.WordPress(
-      baseUrl: kSiteUrl,
-    );
-    featuredPosts = await wordPress.fetchPosts(
-      postParams: wp.ParamsPostList(
-        context: wp.WordPressContext.view,
-        pageNum: 1,
-        perPage: kHomePageArticles,
-        order: wp.Order.desc,
-        orderBy: wp.PostOrderBy.date,
-      ),
-      postType: 'posts',
-      fetchFeaturedMedia: true,
-    );
-    sink.add(featuredPosts);
+    if (isLoadingPosts == false && endReached == false) {
+      isLoadingPosts = true;
+      print('fetching posts');
+      List<wp.Post> _oldPosts;
+      if (featPosts != null) {
+        _oldPosts = featPosts;
+      }
+
+      final int _fetchPage = (_oldPosts.length / kHomePageArticles).round() + 1;
+
+      wp.WordPress wordPress = wp.WordPress(
+        baseUrl: kSiteUrl,
+      );
+      try {
+        newestPosts = await wordPress
+            .fetchPosts(
+          postParams: wp.ParamsPostList(
+            context: wp.WordPressContext.view,
+            pageNum: _fetchPage,
+            perPage: kHomePageArticles,
+            order: wp.Order.desc,
+            orderBy: wp.PostOrderBy.date,
+          ),
+          postType: 'posts',
+          fetchFeaturedMedia: true,
+        )
+            .catchError((err) {
+          endReached = true;
+          print('error occured');
+        });
+      } catch (e) {}
+
+      newestPosts = _oldPosts + newestPosts;
+      sink.add(newestPosts);
+      print('finished fetching posts');
+      isLoadingPosts = false;
+    }
   });
 
   final _fetchCategories =
