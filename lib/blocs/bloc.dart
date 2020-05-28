@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:flutter/material.dart';
 import 'package:flutter_wordpress/flutter_wordpress.dart' as wp;
 import 'package:flutterwp/config/constants.dart';
 import 'package:rxdart/rxdart.dart';
@@ -28,6 +29,7 @@ class Bloc {
   List<wp.Post> get getStoredNewestPosts => newestPosts;
   List<wp.Category> get getStoredCategories => categories;
   bool get getIsLoadingPosts => isLoadingPosts;
+  bool get getEndReached => endReached;
 
   dispose() {
     _newestPostsController.close();
@@ -43,12 +45,10 @@ class Bloc {
       isLoadingPosts = true;
       print('fetching posts');
       List<wp.Post> _oldPosts;
-      if (featPosts != null) {
-        _oldPosts = featPosts;
+      if (newestPosts != null) {
+        _oldPosts = List<wp.Post>.from(newestPosts);
       }
-
       final int _fetchPage = (_oldPosts.length / kHomePageArticles).round() + 1;
-
       wp.WordPress wordPress = wp.WordPress(
         baseUrl: kSiteUrl,
       );
@@ -67,14 +67,14 @@ class Bloc {
         )
             .catchError((err) {
           endReached = true;
+          isLoadingPosts = false;
           print('error occured');
         });
       } catch (e) {}
-
       newestPosts = _oldPosts + newestPosts;
+      isLoadingPosts = false;
       sink.add(newestPosts);
       print('finished fetching posts');
-      isLoadingPosts = false;
     }
   });
 

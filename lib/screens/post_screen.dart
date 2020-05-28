@@ -22,19 +22,21 @@ class PostScreen extends StatelessWidget {
           child: Container(
             child: Column(
               children: <Widget>[
-                Hero(
-                  tag: post.id.toString() + 'featuredImage',
-                  child: Container(
-                    height: 300,
-                    decoration: BoxDecoration(
-                      image: DecorationImage(
-                        fit: BoxFit.cover,
-                        image: CachedNetworkImageProvider(
-                            post.featuredMedia.sourceUrl),
-                      ),
-                    ),
-                  ),
-                ),
+                post.featuredMedia != null
+                    ? Hero(
+                        tag: post.id.toString() + 'featuredImage',
+                        child: Container(
+                          height: 300,
+                          decoration: BoxDecoration(
+                            image: DecorationImage(
+                              fit: BoxFit.cover,
+                              image: CachedNetworkImageProvider(
+                                  post.featuredMedia.sourceUrl),
+                            ),
+                          ),
+                        ),
+                      )
+                    : Container(),
                 Container(
                   padding: EdgeInsets.all(10),
                   child: Column(

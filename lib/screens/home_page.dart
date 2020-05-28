@@ -22,10 +22,17 @@ class HomePage extends StatelessWidget {
               if (!snapshot.hasData) {
                 return LinearProgressIndicator();
               }
-              List<PostFeaturedTile> _featured = [];
+              List<Widget> _featured = [];
               snapshot.data.forEach((post) {
                 _featured.add(PostFeaturedTile(post: post));
               });
+              if (!bloc.getIsLoadingPosts == true) {
+                _featured.add(LinearProgressIndicator());
+              }
+              if (bloc.getEndReached) {
+                _featured.add(Text('No more posts'));
+              }
+
               return NotificationListener<ScrollNotification>(
                 onNotification: (ScrollNotification scrollInfo) {
                   if (scrollInfo.metrics.pixels ==
